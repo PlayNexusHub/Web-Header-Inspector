@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>PlayNexus Web Header Inspector</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="../../assets/playnexus-logo.png" alt="PlayNexus" class="logo" onerror="this.style.display='none'">
+                    <h1>Web Header Inspector</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="settingsBtn" class="btn btn-secondary" title="Settings">
+                        <span class="icon">⚙️</span>
+                    </button>
+                    <button id="helpBtn" class="btn btn-secondary" title="Help">
+                        <span class="icon">❓</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- URL Input Section -->
+            <section class="url-section">
+                <div class="input-group">
+                    <input type="url" id="urlInput" placeholder="https://example.com" class="url-input">
+                    <button id="analyzeBtn" class="btn btn-primary">
+                        <span class="icon">🔍</span>
+                        Analyze Headers
+                    </button>
+                    <button id="fullResponseBtn" class="btn btn-secondary">
+                        <span class="icon">📄</span>
+                        Full Response
+                    </button>
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-url" data-url="https://google.com">Google</button>
+                    <button class="quick-url" data-url="https://github.com">GitHub</button>
+                    <button class="quick-url" data-url="https://stackoverflow.com">Stack Overflow</button>
+                    <button class="quick-url" data-url="https://mozilla.org">Mozilla</button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section">
+                <!-- Loading State -->
+                <div id="loadingState" class="loading-state hidden">
+                    <div class="spinner"></div>
+                    <p>Analyzing headers...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="errorState" class="error-state hidden">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Analysis Failed</h3>
+                    <p id="errorMessage"></p>
+                    <button id="retryBtn" class="btn btn-primary">Retry</button>
+                </div>
+
+                <!-- Results Content -->
+                <div id="resultsContent" class="results-content hidden">
+                    <!-- Security Score -->
+                    <div class="score-section">
+                        <div class="score-card">
+                            <div class="score-circle">
+                                <div class="score-value" id="scoreValue">0</div>
+                                <div class="score-grade" id="scoreGrade">F</div>
+                            </div>
+                            <div class="score-details">
+                                <h3>Security Score</h3>
+                                <p id="scoreDescription">Security header analysis</p>
+                                <div class="score-bar">
+                                    <div class="score-fill" id="scoreFill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="overview">Overview</button>
+                        <button class="tab-btn" data-tab="headers">Headers</button>
+                        <button class="tab-btn" data-tab="issues">Issues</button>
+                        <button class="tab-btn" data-tab="recommendations">Recommendations</button>
+                        <button class="tab-btn" data-tab="raw">Raw Response</button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Overview Tab -->
+                        <div id="overviewTab" class="tab-pane active">
+                            <div class="overview-grid">
+                                <div class="info-card">
+                                    <h4>Status Code</h4>
+                                    <div class="status-code" id="statusCode">-</div>
+                                </div>
+                                <div class="info-card">
+                                    <h4>Analysis Time</h4>
+                                    <div id="analysisTime">-</div>
+                                </div>
+                                <div class="info-card">
+                                    <h4>Headers Found</h4>
+                                    <div id="headersCount">-</div>
+                                </div>
+                                <div class="info-card">
+                                    <h4>Security Headers</h4>
+                                    <div id="securityHeadersCount">-</div>
+                                </div>
+                            </div>
+                            
+                            <div class="security-summary">
+                                <h4>Security Summary</h4>
+                                <div id="securitySummary" class="summary-content"></div>
+                            </div>
+                        </div>
+
+                        <!-- Headers Tab -->
+                        <div id="headersTab" class="tab-pane">
+                            <div class="headers-filter">
+                                <input type="text" id="headerFilter" placeholder="Filter headers..." class="filter-input">
+                                <select id="headerTypeFilter" class="filter-select">
+                                    <option value="all">All Headers</option>
+                                    <option value="security">Security Headers</option>
+                                    <option value="cache">Cache Headers</option>
+                                    <option value="content">Content Headers</option>
+                                </select>
+                            </div>
+                            <div id="headersList" class="headers-list"></div>
+                        </div>
+
+                        <!-- Issues Tab -->
+                        <div id="issuesTab" class="tab-pane">
+                            <div id="issuesList" class="issues-list"></div>
+                        </div>
+
+                        <!-- Recommendations Tab -->
+                        <div id="recommendationsTab" class="tab-pane">
+                            <div id="recommendationsList" class="recommendations-list"></div>
+                        </div>
+
+                        <!-- Raw Response Tab -->
+                        <div id="rawTab" class="tab-pane">
+                            <div class="raw-controls">
+                                <button id="copyRawBtn" class="btn btn-secondary">Copy to Clipboard</button>
+                                <button id="downloadRawBtn" class="btn btn-secondary">Download</button>
+                            </div>
+                            <pre id="rawResponse" class="raw-response"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Export Section -->
+                    <div class="export-section">
+                        <button id="exportJsonBtn" class="btn btn-secondary">
+                            <span class="icon">📄</span>
+                            Export JSON
+                        </button>
+                        <button id="exportPdfBtn" class="btn btn-secondary">
+                            <span class="icon">📋</span>
+                            Export PDF
+                        </button>
+                        <button id="shareBtn" class="btn btn-secondary">
+                            <span class="icon">🔗</span>
+                            Share Results
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Settings</h3>
+                    <button class="modal-close" id="closeSettings">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="timeoutSetting">Request Timeout (ms)</label>
+                        <input type="number" id="timeoutSetting" min="1000" max="30000" value="10000">
+                    </div>
+                    <div class="setting-group">
+                        <label for="redirectsSetting">Max Redirects</label>
+                        <input type="number" id="redirectsSetting" min="0" max="10" value="5">
+                    </div>
+                    <div class="setting-group">
+                        <label for="autoAnalyzeSetting">
+                            <input type="checkbox" id="autoAnalyzeSetting" checked>
+                            Auto-analyze on URL paste
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <label for="themeSetting">Theme</label>
+                        <select id="themeSetting">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                            <option value="auto">Auto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="saveSettings" class="btn btn-primary">Save Settings</button>
+                    <button id="resetSettings" class="btn btn-secondary">Reset to Defaults</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="helpModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Help & Support</h3>
+                    <button class="modal-close" id="closeHelp">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-section">
+                        <h4>Getting Started</h4>
+                        <p>Enter a URL in the input field and click "Analyze Headers" to perform a security analysis of the website's HTTP headers.</p>
+                    </div>
+                    <div class="help-section">
+                        <h4>Security Score</h4>
+                        <p>The security score is calculated based on the presence and configuration of security headers:</p>
+                        <ul>
+                            <li><strong>A+/A:</strong> Excellent security (80-100 points)</li>
+                            <li><strong>B:</strong> Good security (70-79 points)</li>
+                            <li><strong>C:</strong> Average security (60-69 points)</li>
+                            <li><strong>D/F:</strong> Poor security (&lt;60 points)</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h4>Contact Support</h4>
+                        <p>For technical support or questions:</p>
+                        <p><strong>Email:</strong> <a href="mailto:playnexushq@gmail.com">playnexushq@gmail.com</a></p>
+                        <p><strong>Documentation:</strong> <a href="#" onclick="window.electronAPI && window.electronAPI.openExternal && window.electronAPI.openExternal('https://docs.playnexus.com')">docs.playnexus.com</a></p>
+                    </div>
+                    <div class="help-section">
+                        <h4>About</h4>
+                        <p>Powered by <strong>PlayNexus</strong> — Subsystems: ClanForge, BotForge</p>
+                        <p>Owned by <strong>Nortaq</strong></p>
+                        <p>Contact: playnexushq@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
